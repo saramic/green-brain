@@ -1,5 +1,15 @@
 # Work Log
 
+## Thu 16 Apr 2026
+
+- Very thorough overview of all the capabilities of the UNO Q
+  [Element14 community: roadtest of UNO Q by skruglewicz](
+  https://community.element14.com/products/roadtest/rv/roadtest_reviews/1894/)
+- in particular a bunch of useful technical links, some linux command like
+  `sudo halt` and the fact the board triggers a restart if you do a `sudo
+  poweroff`.
+- also all the connectors and the kinds of screens and cammeras you can connect.
+
 ## Sun 11 Apr 2026
 
 ### running headless
