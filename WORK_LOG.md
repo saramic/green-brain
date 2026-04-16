@@ -73,6 +73,9 @@
 - and once I try to enter the the Linux Credentials - the page keeps
   refreshing!!!
     - over and over again
+
+      ![](media/uno_q_app_lab_desktop_setup_reload_loop.gif)
+
     - finally worked out how to look at the system log
       ```sh
       journalctl -f
