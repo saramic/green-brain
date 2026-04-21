@@ -1,0 +1,11 @@
+[tasks."dev-blog"]
+description = "run Jekyll dev blog - https://saramic.github.io/sentinel-box/"
+run = """
+    pushd docs && \
+        bundle && \
+        bundle exec jekyll serve --port 8888 && \
+        popd
+"""
+
+[tools]
+ruby = "3.2.2"
