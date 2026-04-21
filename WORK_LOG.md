@@ -1,5 +1,39 @@
 # Work Log
 
+## TODO Links
+
+- [ ] https://docs.arduino.cc/tutorials/uno-q/ssh/
+- [ ] https://docs.arduino.cc/software/app-lab/tutorials/getting-started/#install--set-up-arduino-app-lab
+- [ ] https://docs.arduino.cc/tutorials/uno-q/power-specification/
+
+- What is mains earth leakage current? - build your own detector - ANT&TEC
+    - https://www.youtube.com/watch?v=kI_9usgyoGY
+
+- [ ] Ligt desing https://community.element14.com/challenges-projects/design-challenges/light-up-your-life/b/news/posts/winners-announcement---light-up-your-life-design-challenge?ICID=DCHmain-feature-widget
+
+- [ ] UNO Q enclosure
+    - https://community.element14.com/products/roadtest/b/blog/posts/arduino-uno-q---getting-started
+
+- https://core-electronics.com.au/projects/
+
+- [ ] recommended by skrugliewicz
+  - Two Months with the Arduino Uno Q: Hackster PRO Jeremy Cook // Getting
+    Started - Hackster.io, an Avnet community
+    - https://www.youtube.com/watch?v=5jbS4puIlUs
+    - https://www.hackster.io/news/hands-on-with-the-arduino-uno-q-74eabc1bd962
+
+- [ ] probably want this on my mac as well
+  - https://docs.arduino.cc/tutorials/uno-q/adb/
+  ```sh
+  brew install android-platform-tools
+  adb version
+  ```
+
+- https://www.hackster.io/mferuscomelo/somnosphere-the-smart-bedside-lamp-4aea48
+  - https://github.com/mferuscomelo/somnosphere-firmware
+
+---
+
 ## Thu 22 Apr 2026
 
 added a Jekyll Github pages blog using the commands
