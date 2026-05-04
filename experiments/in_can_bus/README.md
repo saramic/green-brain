@@ -101,15 +101,19 @@ INT           D2                Interrupt (required for receive)
 ```
 
 ```
-              Arduino Uno
-              ┌──────────┐
-        5V ───┤5V    D10 ├─── CS
-       GND ───┤GND   D11 ├─── SI/MOSI     MCP2515
-          ┌───┤D2    D12 ├─── SO/MISO    ┌─────────┐
-          │   │      D13 ├─── SCK        │         │
-          └───┤INT       │               │  CAN_H ─┼── CAN bus high
-              └──────────┘               │  CAN_L ─┼── CAN bus low
-                                         └─────────┘
+          Arduino Uno
+         ┌────────────┐
+   5V ───┤5V          |
+  GND ───┤GND         |                      MCP2515
+         │            |               ┌───────────────────┐
+         │         D2 ├───────────────| INT               │
+         │        D13 ├───────────────| SCK               |
+         │   MOSI/D11 ├───────────────| SI/MOSI    CAN_H ─┼── CAN bus high
+         │   MISO/D12 ├───────────────| SO/MISO    CAN_L ─┼── CAN bus low
+         │        D10 ├───────────────| CS                |
+         └────────────┘               | GND               |
+                                      | VCC               |
+                                      └───────────────────┘
 ```
 
 #### CAN Bus wiring (all nodes)
