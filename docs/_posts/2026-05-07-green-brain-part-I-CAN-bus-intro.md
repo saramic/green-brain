@@ -38,12 +38,12 @@ The main elements of the On-the-line challenge seem to be:
 
    Shield Evaluation Kit, MAX33041E, Interface, **CAN Transceiver**
 
-I was intruiged by the UNO Q by a review by @skruglewicz
+I was intrigued by the UNO Q by a review by @skruglewicz
 
 - [Test out Arduino's Uno Q - The new Single-Board
   Computer][element-14-review-uno-q]
 
-So I purchased one a few weeks back. The **CAN Transciever** board was a bit
+So I purchased one a few weeks back. The **CAN Transceiver** board was a bit
 out of my price bracket, but I worked out I can get cheap, less industrial,
 **CAN bus** modules based on `MCP2515`so I got a few of those to get my head
 around the communications standard.
@@ -62,7 +62,7 @@ Using the mcp2515 Arduino library, I got the following "loopback mode" test
 code.
 
 ```c
-// NOTE abirdged code to only show important parts
+// NOTE abridged code to only show important parts
 #include <mcp2515.h>
 
 #define MCP_CS_PIN 10
@@ -124,7 +124,7 @@ MOSI (Master Out Slave In) and MISO (Master In Slave Out) SPI (Serial
 Peripheral Interface), MOSI → MOSI, same same. Once the wiring got fixed, I was
 getting the expected loopback message repeating what I was sending.
 
-Missing from the above sketch are some initial verificatin and the frames for
+Missing from the above sketch are some initial verification and the frames for
 the CAN bus communications.
 
 ### CAN verification
@@ -175,7 +175,7 @@ This acts as a verification block for the MCP2515 setup.
 
 To send data on CAN bus it needs to be organised in 8 bytes of payload. This is
 baked into the protocol at the hardware level and the MCP2515 and every other
-CAN controller envorces it.
+CAN controller enforces it.
 
 The reasons CAN was designed this way is:
 
@@ -258,20 +258,31 @@ void printFrame(const char* prefix, const can_frame& f) {
 I had 2 Arduinos connected by 2 wire CAN bus with a 120Ω terminator resistor
 (to prevent signal reflection) sending temperature and humidity readings and
 via a serial monitor on one of them I could see the TX, transmitted values and
-RX, recieved values from the other edge node.
+RX, received values from the other edge node.
 
-TODO ... image
+<video width="740" controls>
+  <source src="/green-brain/assets/20260507_01_two_CAN_nodes.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+The video above has NODE 2 on the left and NODE 3 on the right.
+1. As I bring the soldering iron next to NODE 3 DHT11, the temperature starts to
+   climb to over 30°C.
+2. Unpligging the DHT11 on NODE 2, results in 0°C being sent.
+3. Unplugging the DHT11 on NODE 3, which is the one connected to the serial
+   monitor, results in an error connecting to the device, maybe that should also
+   be sent across the CAN bus for when a node is not behaving.
 
 ## Next
 
-My gear is on it's way so there will no doubt be an unboxing. But I also need
+My gear is on its way so there will no doubt be an unboxing. But I also need
 to hook up my UNO Q to the above CAN bus. I did some investigation and it seems
 the MCP2515 devices I got are 5V whilst the UNO Q is 3V3, so I have some logic
-shifters coming as well as some some 3V3 logic CAN trasnceivers based around
+shifters coming as well as some 3V3 logic CAN transceivers based around
 `SN65HVD230`.
 
 I was hoping to just connect the UNO Q MPU (Microprocessor Unit, the Linux box)
-straight throug to the CAN transciever, but it seems that the MPU has no GPIO
+straight through to the CAN transceiver, but it seems that the MPU has no GPIO
 connections.
 
 ```sh
@@ -296,7 +307,7 @@ export MCP_INT_GPIO=25          # GPIO pin wired to MCP2515 INT
 # check for available SPI devices
 ls /dev/spi*
 
-# add a device tree overaly
+# add a device tree overlay
 #   If dtoverlay is not available, create a .dtbo manually.
 #   See: https://docs.kernel.org/devicetree/overlay-notes.html
 sudo dtoverlay mcp2515-can0 \
@@ -322,11 +333,11 @@ echo "Run the bridge:  cd bridge && npm start"
 
 As presumably the above will not work as there are no GPIO pins to wire the
 MCP2515 to have access to the Linux MPU, this means I will need the MCU
-(Microcontroller Unit, STM32U585) to connect to the CAN transciver via JDIGITAL
+(Microcontroller Unit, STM32U585) to connect to the CAN transceiver via JDIGITAL
 pins and then have the MPU talk to the MCU via `/dev/spidev0.0` - I hope 🤞.
 
 At some point I hope to get into some computer vision and plant detection using
-a model like [**YOLOv8**][YOLOV8-com] or similar running no the **UNO Q**.
+a model like [**YOLOv8**][YOLOV8-com] or similar running on the **UNO Q**.
 
 ## Source
 

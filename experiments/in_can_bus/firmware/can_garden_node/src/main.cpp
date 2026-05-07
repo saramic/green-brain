@@ -6,7 +6,7 @@
 #define DHT_PIN    4
 #define DHT_TYPE   DHT11
 #define MCP_CS_PIN 10
-#define NODE_ID    1
+#define NODE_ID    3
 #define CAN_CLOCK  MCP_8MHZ
 
 // Comment out to switch to normal (live bus) mode once a second node is present.

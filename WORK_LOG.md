@@ -34,6 +34,38 @@
 
 ---
 
+## Thu 7 May 2026
+
+- wrapped up the 2 node comms using Arduino Nano
+- had some issues generating the video and playing via Jekyll
+
+> All three are now BT.709. Jekyll serves static files directly so the updated
+> file should be live immediately — hard refresh the browser (Cmd+Shift+R) to
+> bypass the cache and test again.
+
+> The root cause: the iPhone 13 Pro records in Dolby Vision/HLG (BT.2020 HDR),
+> and even though we re-encoded to H.264, ffmpeg was copying the HDR color
+> metadata. Browsers that encounter HLG metadata on an H.264 stream can fail to
+> decode beyond a certain point.
+
+```sh
+ffmpeg -y -ss 5 -i $USER/Downloads/IMG_XXXX.MOV \
+    -an \
+    -vf "setpts=PTS/1.5,setparams=color_primaries=bt709:color_trc=bt709:colorspace=bt709" \
+    -c:v libx264 -crf 28 -preset fast \
+    -maxrate 1500k -bufsize 3000k \
+    -pix_fmt yuv420p \
+    -movflags +faststart \
+    green-brain/docs/assets/20260507_01_two_CAN_nodes.mp4
+```
+
+Key flags:
+- -ss 5 — skip first 5 seconds
+- -an — no audio
+- setpts=PTS/1.5 — 1.5x speed
+- setparams=...bt709 — force SDR color metadata (fixes the browser playback bug)
+- -crf 28 -maxrate 1500k — keeps it under 10MB
+
 ## Thu 22 Apr 2026
 
 added a Jekyll Github pages blog using the commands
