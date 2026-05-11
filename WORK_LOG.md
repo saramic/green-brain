@@ -34,6 +34,97 @@
 
 ---
 
+## Fri 8 May 2026
+
+What is NI LabView
+
+- **Getting Started With the LabVIEW Interface for Arduino - VI Shots**
+
+  [![Getting Started With the LabVIEW Interface for Arduino - VI Shots
+     ](http://img.youtube.com/vi/RhdnmFJcFA0/0.jpg)
+     ](https://youtu.be/RhdnmFJcFA0)
+
+  - connect via USB
+  - NI-VISA drivers
+  - Arduino VI package and drivers
+
+- **Using NI LabVIEW Case Structures - NI Apps**
+
+  [![Using NI LabVIEW Case Structures - NI Apps
+     ](http://img.youtube.com/vi/I6M57RCnl5I/0.jpg)
+     ](https://youtu.be/I6M57RCnl5I)
+
+  - data acquisition and control
+  - how to connect ot arduion
+  - what COM port is the arduino connected on - by UART?
+  - add Hobbist -> Open.vi -> block diagram serial
+    - sub VI for the serial to update it
+  - DEPRECATED Aug 1 2020
+    - [https://www.labviewmakerhub.com/doku.php?id=learn:tutorials:libraries:linx:misc:custom_command_example](
+      https://www.labviewmakerhub.com/doku.php?id=learn:tutorials:libraries:linx:misc:custom_command_example)
+  - a lot of click ops
+
+- **NI LabVIEW 2025 | The Future of Test Software & AI - NI Apps**
+
+  [![NI LabVIEW 2025 | The Future of Test Software & AI - NI Apps
+     ](http://img.youtube.com/vi/dVFGMxfihOQ/0.jpg)
+     ](https://youtu.be/dVFGMxfihOQ)
+
+  - run in docker on linux
+  - Community edition on Mac - free for makers
+  - Nigel AI
+
+- **NI LabVIEW Basics Part 1: Creating a VI - NI Apps**
+
+  [![NI LabVIEW Basics Part 1: Creating a VI - NI Apps
+     ](http://img.youtube.com/vi/OBcwsJb01F8/0.jpg)
+     ](https://youtu.be/OBcwsJb01F8)
+
+  - VI - Virtual Instrument
+  - block diagram and instrument panel
+
+- **What's new in NI LabVIEW 2026 Q1 - NI Apps**
+
+  [![What's new in NI LabVIEW 2026 Q1 - NI Apps
+     ](http://img.youtube.com/vi/3lqDOZL1wik/0.jpg)
+     ](https://youtu.be/3lqDOZL1wik)
+
+  - concept of controls, set a frequency or a wave form - can that be used to
+    control some hardware?
+  - Nigel AI - code completion across the whole system and LabView+ suite -
+    LabView 2026 Q1
+  - diff features - LabView compare
+  - "mark of the web" - approve and accept externally downloaded code
+  - Project wide debug settings
+  - 3rd party languages - .Net
+  - CI/CD workflows on docker hub
+    - https://hub.docker.com/r/nationalinstruments/labview
+    - windows docker
+    - linux docker
+  - web control
+    - https://github.com/zeshanabdullah10/controlstack-web-bridge
+    - use as a web browser from with LabView
+    - can integrate web Plotly plots
+
+- **Using NI LabVIEW Case Structures - NI Apps**
+
+  [![Using NI LabVIEW Case Structures - NI Apps
+     ](http://img.youtube.com/vi/I6M57RCnl5I/0.jpg)
+     ](https://youtu.be/I6M57RCnl5I)
+  - example of case statements - pretty simple but may be a way of getting
+    started.
+
+- **How to Connect Arduino to LabVIEW: Wiring, Setup, and Programming |
+  Advanced Arduino Control Systems - Full Course**
+
+  [![How to Connect Arduino to LabVIEW: Wiring, Setup, and Programming |
+     Advanced Arduino Control Systems - Full Course
+     ](http://img.youtube.com/vi/SUbU0FSK_nw/0.jpg)
+     ](https://youtu.be/SUbU0FSK_nw)
+
+  - some driver to get to COM port
+  - 7 hours of poor audio
+
 ## Thu 7 May 2026
 
 - wrapped up the 2 node comms using Arduino Nano
@@ -111,7 +202,7 @@ http://127.0.0.1:8888/green-brain/
 - I turned off the visual login
   ```sh
   sudo systemctl get-default
-  > graphical.target 
+  > graphical.target
 
   sudo systemctl set-default multi-user.target
 
@@ -131,7 +222,7 @@ http://127.0.0.1:8888/green-brain/
   # seems the apps is what I need to run
   arduino-app-cli  app
   arduino-app-cli  app list
-  arduino-app-cli  app start examples:video-person-classification     
+  arduino-app-cli  app start examples:video-person-classification
 
   # and now running docker
   docker ps
@@ -194,7 +285,7 @@ http://127.0.0.1:8888/green-brain/
   sudo apt-get install app-lab --yes
   ```
   - still no luck, somehow it still remembered where in the setup process it
-    was and hence would endlessly reload.  
+    was and hence would endlessly reload.
 - Next I attempted to download the source off App Lab to work out where these
   secrets are stored
   ```sh
