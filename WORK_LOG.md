@@ -112,6 +112,28 @@ MCU received value: 152
 MCU received value: 153
 ```
 
+```
+mise run in_app_new:led-off
+mise run in_app_new:led-on
+ ```
+
+### Garden Hub
+
+Although initially attempted direct socket connections circumventing the
+`RouterBridge` and attempting to use `arduino-cli` and via `--protocol network`
+- that did not work. So switched back to a `arduino-app-cli` app created on the
+**UNO Q**
+
+```sh
+mise run upload:in_can_garden_hub
+mise run start:in_can_garden_hub
+
+open http://pollyanna.local:8080/
+
+# stop
+mise run stop:in_can_garden_hub
+```
+
 ## Fri 29 May 2026
 
 Dropping back to router bridge blink

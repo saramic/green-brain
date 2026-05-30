@@ -48,5 +48,88 @@ run = [
   """
 ]
 
+[tasks."in_app_new:led-on"]
+description = "turn STM32 LED on via docker exec"
+run = "ssh pollyanna.local 'docker exec green-brain-in_app_new-main-1 sh -c \"echo ON > /tmp/led_cmd\"'"
+
+[tasks."in_app_new:led-off"]
+description = "turn STM32 LED off via docker exec"
+run = "ssh pollyanna.local 'docker exec green-brain-in_app_new-main-1 sh -c \"echo OFF > /tmp/led_cmd\"'"
+
+# [tasks."upload:in_can_garden_hub"]
+# description = "Upload experiments/in_can_garden_hub to pollyanna"
+# run = [
+#   "ssh pollyanna.local 'mkdir -p /home/arduino/ArduinoApps/can-garden-hub'",
+#   """
+#   rsync -av --exclude='.cache/' \
+#     experiments/in_can_garden_hub/ \
+#     pollyanna.local:~/ArduinoApps/can-garden-hub/
+#   """,
+# ]
+
+# [tasks."start:in_can_garden_hub"]
+# description = "Start experiments/in_can_garden_hub on pollyanna"
+# run = "ssh pollyanna.local 'arduino-app-cli app start /home/arduino/ArduinoApps/can-garden-hub'"
+
+# [tasks."stop:in_can_garden_hub"]
+# description = "Stop experiments/in_can_garden_hub on pollyanna"
+# run = "ssh pollyanna.local 'arduino-app-cli app stop /home/arduino/ArduinoApps/can-garden-hub'"
+
+# [tasks.build]
+# description = "build firmware"
+# run = [
+#   """
+#   arduino-cli compile --fqbn arduino:zephyr:unoq \
+#     experiments/in_can_bus/firmware/can_garden_hub
+#   """
+# ]
+
+# [tasks.upload]
+# description = "upload firmware via network (may not work — use upload-on-board instead)"
+# run = [
+#   """
+#   arduino-cli upload --fqbn arduino:zephyr:unoq \
+#     --port pollyanna --protocol network \
+#     experiments/in_can_bus/firmware/can_garden_hub
+#   """
+# ]
+
+# May need to manually install dependencies on pollyanna:
+#
+#   ssh pollyanna.local
+#
+#   which rsync || sudo apt-get install -y rsync
+#   which node  || sudo apt-get install -y nodejs npm
+[tasks."upload:in_can_garden_hub"]
+description = "Upload the experiments/in_can_garden_hub to pollyanna"
+run = [
+  """
+  ssh pollyanna.local 'mkdir -p /home/arduino/ArduinoApps/green-brain-in_can_garden_hub'
+  """,
+  """
+  rsync -av \
+    --exclude='.cache/' \
+    experiments/in_can_garden_hub/ \
+    pollyanna.local:~/ArduinoApps/green-brain-in_can_garden_hub/
+  """
+]
+
+[tasks."start:in_can_garden_hub"]
+description = "Start the experiments/in_can_garden_hub on pollyanna"
+run = [
+  """
+  ssh pollyanna.local 'arduino-app-cli app start /home/arduino/ArduinoApps/green-brain-in_can_garden_hub'
+  """
+]
+
+[tasks."stop:in_can_garden_hub"]
+description = "Stop the experiments/in_can_garden_hub on pollyanna"
+run = [
+  """
+  ssh pollyanna.local 'arduino-app-cli app stop /home/arduino/ArduinoApps/green-brain-in_can_garden_hub'
+  """
+]
+
+
 [tools]
 ruby = "3.2.2"

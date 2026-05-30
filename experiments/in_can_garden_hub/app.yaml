@@ -1,0 +1,4 @@
+name: can-garden-hub
+icon: 🌿
+ports: [8080]
+bricks: []

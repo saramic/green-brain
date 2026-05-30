@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌿 GreenBrain — CAN Garden Hub</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #0d1f0d;
+      color: #c8e6c9;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    h1   { color: #81c784; font-size: 1.8rem; margin-bottom: 0.25rem; }
+    .sub { color: #558b2f; font-size: 0.9rem; margin-bottom: 2rem; }
+    #status { font-size: 0.85rem; color: #4caf50; margin-bottom: 1.5rem; }
+    #status.error { color: #ef5350; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+
+    .card {
+      background: #1b2e1b;
+      border: 1px solid #2e4a2e;
+      border-radius: 12px;
+      padding: 1.25rem;
+      transition: border-color 0.3s;
+    }
+    .card.fresh  { border-color: #4caf50; }
+    .card.stale  { border-color: #f9a825; }
+    .card.dead   { border-color: #ef5350; opacity: 0.6; }
+
+    .card-title { font-size: 0.8rem; color: #558b2f; text-transform: uppercase; letter-spacing: 1px; }
+    .node-id    { font-size: 1.1rem; font-weight: bold; color: #a5d6a7; margin: 0.25rem 0 0.75rem; }
+    .reading    { display: flex; justify-content: space-between; margin: 0.3rem 0; }
+    .label      { color: #558b2f; font-size: 0.85rem; }
+    .value      { font-size: 1rem; font-weight: 600; color: #e8f5e9; }
+    .age        { font-size: 0.75rem; color: #4a6741; margin-top: 0.75rem; text-align: right; }
+
+    .empty { color: #2e4a2e; font-size: 1.1rem; margin-top: 3rem; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>🌿 GreenBrain</h1>
+  <div class="sub">CAN Garden Hub — live sensor readings</div>
+  <div id="status">connecting…</div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">No nodes seen yet. Waiting for CAN data…</div>
+
+  <script>
+    async function poll() {
+      try {
+        const [nodesRes, statusRes] = await Promise.all([
+          fetch('/api/nodes'),
+          fetch('/api/status'),
+        ]);
+        const nodes  = await nodesRes.json();
+        const status = await statusRes.json();
+
+        document.getElementById('status').textContent =
+          `CAN: ${status.canReady ? '✅ ready' : '⏳ no MCP2515'}  |  ` +
+          `nodes: ${status.nodes}  |  uptime: ${status.uptime}s`;
+        document.getElementById('status').className = '';
+
+        renderNodes(nodes);
+      } catch (e) {
+        document.getElementById('status').textContent = `⚠ bridge error: ${e.message}`;
+        document.getElementById('status').className = 'error';
+      }
+    }
+
+    function renderNodes(nodes) {
+      const grid  = document.getElementById('grid');
+      const empty = document.getElementById('empty');
+      if (!nodes.length) { grid.innerHTML = ''; empty.style.display = ''; return; }
+      empty.style.display = 'none';
+      grid.innerHTML = nodes.map(n => {
+        const cls = n.age < 10 ? 'fresh' : n.age < 30 ? 'stale' : 'dead';
+        return `<div class="card ${cls}">
+          <div class="card-title">Sensor Node</div>
+          <div class="node-id">Node #${n.node}</div>
+          <div class="reading"><span class="label">🌡 Temp</span><span class="value">${n.ok ? n.temp + ' °C' : '—'}</span></div>
+          <div class="reading"><span class="label">💧 Humidity</span><span class="value">${n.ok ? n.hum + ' %' : '—'}</span></div>
+          <div class="reading"><span class="label">Seq</span><span class="value">${n.seq}</span></div>
+          <div class="age">${n.age}s ago</div>
+        </div>`;
+      }).join('');
+    }
+
+    poll();
+    setInterval(poll, 2000);
+  </script>
+</body>
+</html>
