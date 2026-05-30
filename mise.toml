@@ -7,5 +7,46 @@ run = """
         popd
 """
 
+[tasks.install]
+description = "install dependencies, assuming homebrew"
+run = [
+  "brew bundle --file Brewfile",
+  "arduino-cli core install arduino:zephyr",
+  "arduino-cli lib update-index",
+  'arduino-cli lib install "autowp-mcp2515"',
+  'arduino-cli lib install "Arduino_RouterBridge"',
+  'arduino-cli lib install "Arduino_RPClite"',
+]
+
+[tasks."upload:in_app_new"]
+description = "Upload the experiments/in_app_new"
+run = [
+  """
+  ssh pollyanna.local 'mkdir -p /home/arduino/ArduinoApps/green-brain-in_app_new'
+  """,
+  """
+  rsync -av \
+    --exclude='.cache/' \
+    experiments/in_app_new/ \
+    pollyanna.local:~/ArduinoApps/green-brain-in_app_new/
+  """
+]
+
+[tasks."start:in_app_new"]
+description = "Start the experiments/in_app_new"
+run = [
+  """
+  ssh pollyanna.local 'arduino-app-cli app start /home/arduino/ArduinoApps/green-brain-in_app_new'
+  """
+]
+
+[tasks."stop:in_app_new"]
+description = "Stop the experiments/in_app_new"
+run = [
+  """
+  ssh pollyanna.local 'arduino-app-cli app stop /home/arduino/ArduinoApps/green-brain-in_app_new'
+  """
+]
+
 [tools]
 ruby = "3.2.2"

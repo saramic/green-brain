@@ -1,24 +1,37 @@
 #include "Arduino_RouterBridge.h"
 
 void handle_message(int value) {
-  // Use Monitor.print to send text back to the App Lab console
-  Monitor.print("MCU received value: ");
-  Monitor.println(value);
+    Monitor.print("tick: ");
+    Monitor.println(value);
+}
+
+void handle_set_led(String state) {
+    Monitor.print("raw len=");
+    Monitor.print(state.length());
+    Monitor.print(" bytes=[");
+    for (int i = 0; i < (int)state.length(); i++) {
+        Monitor.print((int)state[i]);
+        Monitor.print(' ');
+    }
+    Monitor.println("]");
+
+    state.trim();
+    bool on = state == "ON";
+    digitalWrite(LED_BUILTIN, on ? LOW : HIGH);  // STM32 LED_BUILTIN is active-LOW
+    Monitor.print("LED: ");
+    Monitor.println(on ? "ON" : "OFF");
 }
 
 void setup() {
-  // Start the Bridge communication layer
-  Bridge.begin();
+    pinMode(LED_BUILTIN, OUTPUT);
 
-  // Start the Monitor
-  Monitor.begin();
+    Bridge.begin();
+    Monitor.begin();
 
-  // Expose the function to the Bridge so Python can call it.
-  // We use "print_value" as the name Python will use to find it.
-  Bridge.provide_safe("print_value", handle_message);
+    Bridge.provide_safe("print_value", handle_message);
+    Bridge.provide_safe("set_led",     handle_set_led);
 }
 
 void loop() {
-  // The Bridge handles incoming calls automatically in the background.
-  // Keep the loop clear of blocking code.
+    // Bridge handles incoming calls in the background.
 }
