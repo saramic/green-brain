@@ -73,9 +73,10 @@
     source.onmessage = (event) => {
       const { nodes, status } = JSON.parse(event.data);
       if (status) {
+        const backend = status.backend ?? 'unknown';
+        const canStatus = status.canReady ? '✅ ready' : '⏳ not ready';
         statusEl.textContent =
-          `CAN: ${status.canReady ? '✅ ready' : '⏳ no MCP2515'}  |  ` +
-          `nodes: ${status.nodes}  |  uptime: ${status.uptime}s`;
+          `CAN: ${canStatus}  |  backend: ${backend}  |  nodes: ${status.nodes}  |  uptime: ${status.uptime}s`;
         statusEl.className = '';
       }
       renderNodes(nodes);

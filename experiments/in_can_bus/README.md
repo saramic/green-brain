@@ -9,7 +9,7 @@ real-time dashboard deployed on the Arduino UNO Q.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                       CAN Bus Network (200kbps)                          │
+│                       CAN Bus Network (500kbps)                          │
 │                                                                          │
 │  ┌──────────────┐    ┌──────────────┐         ┌──────────────┐           │
 │  │ Arduino Nano │    │ Arduino Nano │   ...   │ Arduino Nano │           │
@@ -104,38 +104,41 @@ SCK           D13                SPI clock
 INT           D2                 Interrupt (required for receive)
 ```
 
-### Phase 3 — MCP2515 → Level shifter → UNO Q STM32
+### Phase 3 — WCMCU-230 (SN65HVD230) → UNO Q STM32
 
-The STM32 GPIO is 3.3V. The cheap MCP2515 modules are 5V.
-Use a bidirectional level shifter — a BSS138-based 4-channel module works well.
+The WCMCU-230 is a 3.3V CAN transceiver — **no level shifter needed**.
+It connects directly to the STM32U5's built-in FDCAN peripheral via two wires.
+No SPI, no MCP2515 library — the STM32 hardware handles the CAN protocol.
 
 ```
-MCP2515 (5V side)     Level shifter    UNO Q STM32 SPI (3.3V)
-──────────────────    ─────────────    ──────────────────────
-VCC  ────────────────────────────────  5V  (power for MCP2515)
-GND  ────────────────────────────────  GND
-SI/MOSI ──────────── HV1 ── LV1 ─────  MOSI  (SPI)
-SO/MISO ──────────── HV2 ── LV2 ─────  MISO  (SPI)
-SCK ──────────────── HV3 ── LV3 ─────  SCK   (SPI)
-CS ───────────────── HV4 ── LV4 ─────  D10   (CS pin in sketch)
-INT ──────────────── HV5 ── LV5 ─────  (not used — polling mode)
-                     HV_VCC ← 5V
-                     LV_VCC ← 3.3V
+WCMCU-230     UNO Q STM32 Arduino header
+──────────    ───────────────────────────
+3V3  ──────── 3.3V
+GND  ──────── GND
+CTX  ──────── D4  (FDCAN1_TX = PA12)
+CRX  ──────── D5  (FDCAN1_RX = PA11)  ← marked ~D5 on pinout (PWM-capable pin)
+CANH ──────── CAN bus H
+CANL ──────── CAN bus L
 ```
+
+> The WCMCU-230 has a built-in 120Ω termination resistor (check your module's
+> datasheet/silkscreen — many have a solder jumper labeled R). Enable it on the
+> two end nodes only.
 
 #### CAN Bus wiring (all nodes)
 
 ```
-[Node 1 MCP2515]──CAN_H──[Node 2 MCP2515]──CAN_H──[Hub MCP2515]
-[Node 1 MCP2515]──CAN_L──[Node 2 MCP2515]──CAN_L──[Hub MCP2515]
-     │                                                    │
-  120Ω (to CAN_L)                                  120Ω (to CAN_L)
-  (terminator)                                     (terminator)
+[Node 1 MCP2515]──CAN_H──[Node 2 MCP2515]──CAN_H──[Hub WCMCU-230]
+[Node 1 MCP2515]──CAN_L──[Node 2 MCP2515]──CAN_L──[Hub WCMCU-230]
+     │                                                     │
+  120Ω terminator                               120Ω terminator
+  (on MCP2515 module                            (WCMCU-230 solder jumper)
+   solder jumper)
 ```
 
-> Both ends of the CAN bus need a 120Ω terminator between CAN_H and CAN_L.
-> Many MCP2515 modules have a solder-jumper for this — enable it on the two
-> end nodes only.
+> Sensor nodes (Arduino Nano) still use MCP2515 modules at 5V — that's fine,
+> CAN bus is differential and tolerates mixed-voltage nodes. Only the hub
+> (UNO Q STM32) switches to the 3.3V WCMCU-230.
 
 ---
 

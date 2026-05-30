@@ -134,6 +134,80 @@ open http://pollyanna.local:8080/
 mise run stop:in_can_garden_hub
 ```
 
+### Board info
+
+```
+arduino-cli board details --fqbn arduino:zephyr:unoq
+
+# output
+Board name:                Arduino UNO Q
+FQBN:                      arduino:zephyr:unoq
+Board version:             0.55.2
+
+Official Arduino board:    ✔
+
+Identification properties: pid=0x0078
+                           vid=0x2341
+
+Package name:              arduino
+Package maintainer:        Arduino
+Package URL:               https://downloads.arduino.cc/packages/package_index.tar.bz2
+Package website:           https://www.arduino.cc/
+Package online help:       https://www.arduino.cc/en/Reference/HomePage
+
+Platform name:             Arduino UNO Q Board
+Platform category:         Arduino
+Platform architecture:     zephyr
+Platform URL:              https://downloads.arduino.cc/cores/zephyr/ArduinoCore-zephyr_unoq-ef5867ec.tar.bz2
+Platform file name:        ArduinoCore-zephyr_unoq-ef5867ec.tar.bz2
+Platform size (bytes):     6453512
+Platform checksum:         SHA-256:23516f54e53d95dacefb2f6c97fff96d611a8874e02ef6dfd725a466450cd474
+
+Required tool: SiliconLabs:openocd                0.12.0-arduino1-static
+Required tool: arduino:adb                        32.0.0
+Required tool: arduino:bossac                     1.9.1-arduino2
+Required tool: arduino:dfu-util                   0.11.0-arduino5
+Required tool: arduino:gen-rodata-ld              0.1.1
+Required tool: arduino:remoteocd                  0.1.1
+Required tool: arduino:sync-zephyr-artifacts      0.2.1
+Required tool: arduino:zephyr-check-size          0.1.0
+Required tool: arduino:zephyr-sketch-tool         0.3.0
+Required tool: zephyr:arm-zephyr-eabi             0.16.8
+
+Option:        Link mode                                                   link_mode
+               Dynamic                            ✔                        link_mode=dynamic
+               Static                                                      link_mode=static
+Option:        Startup mode                                                wait_linux_boot
+               Wait for Linux                     ✔                        wait_linux_boot=yes
+               Immediate                                                   wait_linux_boot=no
+               Wait for App                                                wait_linux_boot=app
+Programmers:   ID                                 Name
+               cmsis-dap                          ARM CMSIS-DAP compatible
+               jlink                              JLink
+               openocd                            OpenOCD
+```
+
+### Still confused about Zephyr
+
+- https://docs.arduino.cc/tutorials/uno-q/debian-guide/
+- https://docs.zephyrproject.org/latest/hardware/peripherals/can/shell.html
+- https://docs.zephyrproject.org/latest/hardware/peripherals/can/controller.html
+
+### More on Bridge
+
+- https://docs.arduino.cc/software/app-lab/bridge/get-started-with-bridge/
+- https://docs.arduino.cc/software/app-lab/bridge/bridge-api/
+- https://github.com/arduino-libraries/Arduino_RouterBridge/tree/main/examples
+- app lab cli
+  - https://docs.arduino.cc/software/app-lab/cli/cli/
+- crazy ways to turn it OFF
+  - https://forum.arduino.cc/t/uno-q-how-to-achieve-manual-control-over-router-bridge-formed-using-uart2-ttyhs1-mpu-lpuart1-serial2-mcu-devices/1426989/17
+  - https://forum.arduino.cc/t/uno-q-how-to-achieve-manual-control-over-router-bridge-formed-using-uart2-ttyhs1-mpu-lpuart1-serial2-mcu-devices/1426989
+- working with VSCode
+  - https://github.com/johanwheeler/arduino-uno-q-vs-code-workspace
+  - could push using `adb`
+    - https://github.com/johanwheeler/arduino-uno-q-vs-code-workspace/blob/main/.vscode/scripts/push_project.sh
+
 ## Fri 29 May 2026
 
 Dropping back to router bridge blink

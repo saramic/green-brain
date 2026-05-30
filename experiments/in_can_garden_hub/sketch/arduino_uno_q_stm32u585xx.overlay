@@ -1,0 +1,20 @@
+/*
+ * Device tree overlay — GreenBrain CAN hub.
+ *
+ * FDCAN1 is pre-configured in the board overlay with:
+ *   fdcan1_rx_pa11  →  D5  (CRX on WCMCU-230)
+ *   fdcan1_tx_pa12  →  D4  (CTX on WCMCU-230)
+ *
+ * The only change needed: remove zephyr,deferred-init so the driver
+ * initialises at boot instead of requiring an explicit device_init() call.
+ */
+
+/ {
+    chosen {
+        zephyr,canbus = &fdcan1;
+    };
+};
+
+&fdcan1 {
+    /delete-property/ zephyr,deferred-init;
+};
