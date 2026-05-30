@@ -102,6 +102,16 @@ rsync -av \
   experiments/in_app_new/
 ```
 
+runs both in Linux and via App Lab
+
+```
+arduino-app-cli app start .
+arduino-app-cli monitor
+...
+MCU received value: 152
+MCU received value: 153
+```
+
 ## Fri 29 May 2026
 
 Dropping back to router bridge blink
