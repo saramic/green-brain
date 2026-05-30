@@ -49,27 +49,6 @@
   <div class="empty" id="empty" style="display:none">No nodes seen yet. Waiting for CAN data…</div>
 
   <script>
-    async function poll() {
-      try {
-        const [nodesRes, statusRes] = await Promise.all([
-          fetch('/api/nodes'),
-          fetch('/api/status'),
-        ]);
-        const nodes  = await nodesRes.json();
-        const status = await statusRes.json();
-
-        document.getElementById('status').textContent =
-          `CAN: ${status.canReady ? '✅ ready' : '⏳ no MCP2515'}  |  ` +
-          `nodes: ${status.nodes}  |  uptime: ${status.uptime}s`;
-        document.getElementById('status').className = '';
-
-        renderNodes(nodes);
-      } catch (e) {
-        document.getElementById('status').textContent = `⚠ bridge error: ${e.message}`;
-        document.getElementById('status').className = 'error';
-      }
-    }
-
     function renderNodes(nodes) {
       const grid  = document.getElementById('grid');
       const empty = document.getElementById('empty');
@@ -88,8 +67,24 @@
       }).join('');
     }
 
-    poll();
-    setInterval(poll, 2000);
+    const statusEl = document.getElementById('status');
+    const source   = new EventSource('/events');
+
+    source.onmessage = (event) => {
+      const { nodes, status } = JSON.parse(event.data);
+      if (status) {
+        statusEl.textContent =
+          `CAN: ${status.canReady ? '✅ ready' : '⏳ no MCP2515'}  |  ` +
+          `nodes: ${status.nodes}  |  uptime: ${status.uptime}s`;
+        statusEl.className = '';
+      }
+      renderNodes(nodes);
+    };
+
+    source.onerror = () => {
+      statusEl.textContent = '⚠ connection lost — reconnecting…';
+      statusEl.className = 'error';
+    };
   </script>
 </body>
 </html>
