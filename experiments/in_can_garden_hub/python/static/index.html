@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🌿 GreenBrain — CAN Garden Hub</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -18,7 +19,7 @@
     #status { font-size: 0.85rem; color: #4caf50; margin-bottom: 1.5rem; }
     #status.error { color: #ef5350; }
 
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
 
     .card {
       background: #1b2e1b;
@@ -27,16 +28,17 @@
       padding: 1.25rem;
       transition: border-color 0.3s;
     }
-    .card.fresh  { border-color: #4caf50; }
-    .card.stale  { border-color: #f9a825; }
-    .card.dead   { border-color: #ef5350; opacity: 0.6; }
+    .card.fresh { border-color: #4caf50; }
+    .card.stale { border-color: #f9a825; }
+    .card.dead  { border-color: #ef5350; opacity: 0.6; }
 
     .card-title { font-size: 0.8rem; color: #558b2f; text-transform: uppercase; letter-spacing: 1px; }
     .node-id    { font-size: 1.1rem; font-weight: bold; color: #a5d6a7; margin: 0.25rem 0 0.75rem; }
     .reading    { display: flex; justify-content: space-between; margin: 0.3rem 0; }
     .label      { color: #558b2f; font-size: 0.85rem; }
     .value      { font-size: 1rem; font-weight: 600; color: #e8f5e9; }
-    .age        { font-size: 0.75rem; color: #4a6741; margin-top: 0.75rem; text-align: right; }
+    .age        { font-size: 0.75rem; color: #4a6741; margin-top: 0.5rem; text-align: right; }
+    .chart-wrap { margin-top: 0.75rem; height: 90px; }
 
     .empty { color: #2e4a2e; font-size: 1.1rem; margin-top: 3rem; text-align: center; }
   </style>
@@ -49,22 +51,114 @@
   <div class="empty" id="empty" style="display:none">No nodes seen yet. Waiting for CAN data…</div>
 
   <script>
+    const MAX_POINTS = 150;   // 5 min @ 2s intervals
+    const history   = {};     // { nodeId: { labels, temp, hum } }
+    const charts    = {};     // { nodeId: Chart }
+
+    const CHART_DEFAULTS = {
+      animation: false,
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          ticks: { maxTicksLimit: 5, color: '#4a6741', font: { size: 10 } },
+          grid:  { color: '#1e3a1e' },
+        },
+        yTemp: {
+          type: 'linear', position: 'left',
+          ticks: { color: '#ef9a9a', font: { size: 10 } },
+          grid:  { color: '#1e3a1e' },
+        },
+        yHum: {
+          type: 'linear', position: 'right',
+          ticks: { color: '#90caf9', font: { size: 10 } },
+          grid:  { drawOnChartArea: false },
+        },
+      },
+      plugins: {
+        legend: { labels: { color: '#81c784', boxWidth: 12, font: { size: 11 } } },
+      },
+    };
+
+    function getHistory(id) {
+      if (!history[id]) history[id] = { labels: [], temp: [], hum: [] };
+      return history[id];
+    }
+
+    function pushData(node) {
+      const h = getHistory(node.node);
+      const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      h.labels.push(t);
+      h.temp.push(node.ok ? node.temp : null);
+      h.hum.push(node.ok  ? node.hum  : null);
+      if (h.labels.length > MAX_POINTS) { h.labels.shift(); h.temp.shift(); h.hum.shift(); }
+    }
+
+    function createChart(canvasId, nodeId) {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      charts[nodeId] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            { label: 'Temp °C', data: [], borderColor: '#ef9a9a', backgroundColor: 'transparent',
+              yAxisID: 'yTemp', pointRadius: 0, borderWidth: 1.5, tension: 0.3 },
+            { label: 'Hum %',  data: [], borderColor: '#90caf9', backgroundColor: 'transparent',
+              yAxisID: 'yHum',  pointRadius: 0, borderWidth: 1.5, tension: 0.3 },
+          ],
+        },
+        options: CHART_DEFAULTS,
+      });
+    }
+
+    function updateChart(nodeId) {
+      const chart = charts[nodeId];
+      if (!chart) return;
+      const h = history[nodeId];
+      chart.data.labels           = h.labels;
+      chart.data.datasets[0].data = h.temp;
+      chart.data.datasets[1].data = h.hum;
+      chart.update('none');
+    }
+
     function renderNodes(nodes) {
       const grid  = document.getElementById('grid');
       const empty = document.getElementById('empty');
       if (!nodes.length) { grid.innerHTML = ''; empty.style.display = ''; return; }
       empty.style.display = 'none';
-      grid.innerHTML = nodes.map(n => {
-        const cls = n.age < 10 ? 'fresh' : n.age < 30 ? 'stale' : 'dead';
-        return `<div class="card ${cls}">
-          <div class="card-title">Sensor Node</div>
-          <div class="node-id">Node #${n.node}</div>
-          <div class="reading"><span class="label">🌡 Temp</span><span class="value">${n.ok ? n.temp + ' °C' : '—'}</span></div>
-          <div class="reading"><span class="label">💧 Humidity</span><span class="value">${n.ok ? n.hum + ' %' : '—'}</span></div>
-          <div class="reading"><span class="label">Seq</span><span class="value">${n.seq}</span></div>
-          <div class="age">${n.age}s ago</div>
-        </div>`;
-      }).join('');
+
+      nodes.forEach(n => {
+        pushData(n);
+
+        const cardId = `card-${n.node}`;
+        const cls    = n.age < 10 ? 'fresh' : n.age < 30 ? 'stale' : 'dead';
+        let card     = document.getElementById(cardId);
+
+        if (!card) {
+          card = document.createElement('div');
+          card.id        = cardId;
+          card.className = `card ${cls}`;
+          card.innerHTML = `
+            <div class="card-title">Sensor Node</div>
+            <div class="node-id">Node #${n.node}</div>
+            <div class="reading"><span class="label">🌡 Temp</span><span class="value" id="temp-${n.node}">—</span></div>
+            <div class="reading"><span class="label">💧 Humidity</span><span class="value" id="hum-${n.node}">—</span></div>
+            <div class="reading"><span class="label">Seq</span><span class="value" id="seq-${n.node}">—</span></div>
+            <div class="age" id="age-${n.node}">—</div>
+            <div class="chart-wrap"><canvas id="chart-${n.node}"></canvas></div>
+          `;
+          grid.appendChild(card);
+          createChart(`chart-${n.node}`, n.node);
+        } else {
+          card.className = `card ${cls}`;
+        }
+
+        document.getElementById(`temp-${n.node}`).textContent = n.ok ? `${n.temp} °C` : '—';
+        document.getElementById(`hum-${n.node}`).textContent  = n.ok ? `${n.hum} %`   : '—';
+        document.getElementById(`seq-${n.node}`).textContent  = n.seq;
+        document.getElementById(`age-${n.node}`).textContent  = `${n.age}s ago`;
+        updateChart(n.node);
+      });
     }
 
     const statusEl = document.getElementById('status');
@@ -73,18 +167,17 @@
     source.onmessage = (event) => {
       const { nodes, status } = JSON.parse(event.data);
       if (status) {
-        const backend = status.backend ?? 'unknown';
+        const backend   = status.backend ?? 'unknown';
         const canStatus = status.canReady ? '✅ ready' : '⏳ not ready';
-        statusEl.textContent =
-          `CAN: ${canStatus}  |  backend: ${backend}  |  nodes: ${status.nodes}  |  uptime: ${status.uptime}s`;
-        statusEl.className = '';
+        statusEl.textContent = `CAN: ${canStatus}  |  backend: ${backend}  |  nodes: ${status.nodes}  |  uptime: ${status.uptime}s`;
+        statusEl.className   = '';
       }
       renderNodes(nodes);
     };
 
     source.onerror = () => {
       statusEl.textContent = '⚠ connection lost — reconnecting…';
-      statusEl.className = 'error';
+      statusEl.className   = 'error';
     };
   </script>
 </body>
