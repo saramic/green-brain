@@ -47,6 +47,12 @@
 
 ---
 
+## Mon 1 Jun 2026
+
+For prosperity on by passing the RPC bridge on the UNO Q
+- https://forum.arduino.cc/t/how-to-access-raw-mcu-to-mpu-uart-spi-on-arduino-uno-q-bypassing-rpc-bridge/1417118
+- https://forum.arduino.cc/t/uno-q-mcu-mpu-spi-communication/1424374
+
 ## Sat 30 May 2026
 
 switch back to plain old `arduino-app-cli` on the UNO Q
