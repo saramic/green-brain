@@ -6,30 +6,54 @@
 #define DHT_PIN    4
 #define DHT_TYPE   DHT11
 #define MCP_CS_PIN 10
-#define NODE_ID    3
+#define NODE_ID    1 // 1 // 3 // change for appropriate node ID
 #define CAN_CLOCK  MCP_8MHZ
 
 // Comment out to switch to normal (live bus) mode once a second node is present.
-// #define LOOPBACK_TEST
+#define LOOPBACK_TEST
 
 DHT dht(DHT_PIN, DHT_TYPE);
 MCP2515 mcp2515(MCP_CS_PIN);
 
 uint8_t sequence = 0;
 
-// // Read CANSTAT register directly to verify chip operating mode.
-// // MCP2515 opmode bits [7:5]: 0x00=Normal 0x20=Sleep 0x40=Loopback
-// //                            0x60=Listen-only 0x80=Config
-// uint8_t readCanstat() {
-//     SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
-//     digitalWrite(MCP_CS_PIN, LOW);
-//     SPI.transfer(0x03); // READ instruction
-//     SPI.transfer(0x0E); // CANSTAT register address
-//     uint8_t val = SPI.transfer(0x00);
-//     digitalWrite(MCP_CS_PIN, HIGH);
-//     SPI.endTransaction();
-//     return val;
-// }
+// MCP2515 opmode bits [7:5]: 0x00=Normal 0x20=Sleep 0x40=Loopback
+//                            0x60=Listen-only 0x80=Config
+uint8_t readCanstat() {
+    SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+    digitalWrite(MCP_CS_PIN, LOW);
+    SPI.transfer(0x03); // READ instruction
+    SPI.transfer(0x0E); // CANSTAT register address
+    uint8_t val = SPI.transfer(0x00);
+    digitalWrite(MCP_CS_PIN, HIGH);
+    SPI.endTransaction();
+    return val;
+}
+
+uint8_t readReg(uint8_t addr) {
+    SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+    digitalWrite(MCP_CS_PIN, LOW);
+    SPI.transfer(0x03);
+    SPI.transfer(addr);
+    uint8_t val = SPI.transfer(0x00);
+    digitalWrite(MCP_CS_PIN, HIGH);
+    SPI.endTransaction();
+    return val;
+}
+
+// EFLG 0x2D: bit5=TXBO(bus-off) bit4=TXEP(err-passive) bit2=TXWAR(warning)
+// TEC  0x1C: transmit error counter  REC 0x1D: receive error counter
+void printErrors() {
+    uint8_t eflg = readReg(0x2D);
+    uint8_t tec  = readReg(0x1C);
+    if (eflg == 0 && tec == 0) return;
+    Serial.print(F(" EFLG=0x")); Serial.print(eflg, HEX);
+    Serial.print(F(" TEC=")); Serial.print(tec);
+    if (eflg & 0x20) Serial.print(F(" [BUS-OFF]"));
+    else if (eflg & 0x10) Serial.print(F(" [ERR-PASSIVE]"));
+    else if (eflg & 0x01) Serial.print(F(" [WARNING]"));
+    Serial.println();
+}
 
 can_frame buildFrame(float temp, float hum, bool sensorOk) {
     can_frame frame;
@@ -82,7 +106,9 @@ void setup() {
     mcp2515.reset();
     delay(100);
 
-    // 500kbps is marginal at 8MHz (only 8 time-quanta). 200kbps is reliable.
+    // 500kbps @ 8MHz = 8 time-quanta (marginal but workable with good wiring).
+    Serial.print(F("CANSTAT after reset=0x")); Serial.println(readCanstat(), HEX);
+    // expect 0x80 (config mode) — 0x00/0xFF means SPI not working
     if (mcp2515.setBitrate(CAN_500KBPS, CAN_CLOCK) != MCP2515::ERROR_OK) {
         Serial.println(F("ERR: setBitrate failed — check SPI wiring"));
         while (true);
@@ -124,7 +150,9 @@ void setup() {
 }
 
 void loop() {
-    delay(2000);
+    // Stagger per node so they don't all transmit simultaneously.
+    // Base 2s interval + NODE_ID * 300ms offset keeps nodes out of phase.
+    delay(2000 + NODE_ID * 300);
 
     float hum  = dht.readHumidity();
     float temp = dht.readTemperature();
@@ -138,9 +166,25 @@ void loop() {
         // code 2=ALLTXBUSY: TX buffers all stuck — chip probably in CONFIG mode
         // code 4=FAILTX: frame sent but no ACK (expected in normal mode, no bus)
         Serial.print(F("ERR: send failed code=")); Serial.println(sendErr);
+        // EFLG bit 5 = TXBO (bus-off). Reset and re-enter normal mode.
+        SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+        digitalWrite(MCP_CS_PIN, LOW);
+        SPI.transfer(0x03); SPI.transfer(0x2D); // READ EFLG
+        uint8_t eflg = SPI.transfer(0x00);
+        digitalWrite(MCP_CS_PIN, HIGH);
+        SPI.endTransaction();
+        if (eflg & 0x20) {
+            Serial.println(F("EFLG: bus-off — resetting MCP2515"));
+            mcp2515.reset();
+            delay(100);
+            mcp2515.setBitrate(CAN_500KBPS, CAN_CLOCK);
+            delay(10);
+            mcp2515.setNormalMode();
+        }
         return;
     }
     printFrame("TX ", tx);
+    printErrors();
 
 #ifdef LOOPBACK_TEST
     delay(10);

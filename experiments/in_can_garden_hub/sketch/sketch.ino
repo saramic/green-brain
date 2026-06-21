@@ -207,7 +207,15 @@ void loop() {
         lastBlink = millis();
     }
 
-    if (!canReady) return;
+    if (!canReady) {
+        static uint32_t lastRetry = 0;
+        if (millis() - lastRetry >= 10000) {
+            Monitor.println("CAN not ready — retrying init");
+            lastRetry = millis();
+            canReady = initCan();
+        }
+        return;
+    }
 
     FRAME_TYPE frame;
     if (readFrame(frame)) {
